@@ -30,6 +30,8 @@ class WheelOfFortune extends Component {
     };
     this.angle = 0;
 
+    this.myRef = React.createRef();
+
     this.prepareWheel();
   }
 
@@ -42,7 +44,9 @@ class WheelOfFortune extends Component {
     this.oneTurn = 360;
     this.angleBySegment = this.oneTurn / this.numberOfSegments;
     this.angleOffset = this.angleBySegment / 2;
-    this.winner = this.props.options.winner ?? Math.floor(Math.random() * this.numberOfSegments);
+    this.winner = this.props.options.winner
+      ? this.props.options.winner
+      : Math.floor(Math.random() * this.numberOfSegments);
 
     this._wheelPaths = this.makeWheel();
     this._angle = new Animated.Value(0);
@@ -64,10 +68,13 @@ class WheelOfFortune extends Component {
   };
 
   _tryAgain = () => {
-    this.prepareWheel();
-    this.resetWheelState();
-    this.angleListener();
-    this._onPress();
+    if (!this.myRef?.current) {
+      this.myRef.current = true;
+      this.prepareWheel();
+      this.resetWheelState();
+      this.angleListener();
+      this._onPress();
+    }
   };
 
   angleListener = () => {
@@ -142,6 +149,7 @@ class WheelOfFortune extends Component {
     this.setState({
       started: true,
     });
+
     Animated.timing(this._angle, {
       toValue:
         365 -
@@ -150,19 +158,13 @@ class WheelOfFortune extends Component {
       duration: duration,
       useNativeDriver: true,
     }).start(() => {
+      this.myRef.current = false;
       const winnerIndex = this._getWinnerIndex();
       this.setState({
         finished: true,
         winner: this._wheelPaths[winnerIndex].value,
       });
-      if (this.props.getWinner) {
-        this.props.getWinner(this._wheelPaths[winnerIndex].value, winnerIndex);
-      } else {
-        this.props.options?.getWinner?.(
-          this._wheelPaths[winnerIndex].value,
-          winnerIndex
-          );
-      }
+      this.props.getWinner(this._wheelPaths[winnerIndex].value, winnerIndex);
     });
   };
 
@@ -318,7 +320,7 @@ class WheelOfFortune extends Component {
             source={
               this.props.options.knobSource
                 ? this.props.options.knobSource
-                : require('../assets/images/knob.png')
+                : require('../../js/assets/imgs/knob.png')
             }
             style={{ width: knobSize, height: (knobSize * 100) / 57 }}
           />
@@ -340,7 +342,9 @@ class WheelOfFortune extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <View
+        <TouchableOpacity
+          disabled={this.props.options.disabled}
+          onPress={()=>this._tryAgain()}
           style={{
             position: 'absolute',
             width: width,
@@ -351,7 +355,7 @@ class WheelOfFortune extends Component {
           <Animated.View style={[styles.content, {padding: 10}]}>
             {this._renderSvgWheel()}
           </Animated.View>
-        </View>
+        </TouchableOpacity>
         {this.props.options.playButton ? this._renderTopToPlay() : null}
       </View>
     );
