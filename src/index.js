@@ -205,67 +205,72 @@ class WheelOfFortune extends Component {
     return (
       <View style={styles.container}>
         {this._renderKnob()}
-        <Animated.View
-          style={{
-            alignItems: 'center',
-            justifyContent: 'center',
-            transform: [
-              {
-                rotate: this._angle.interpolate({
-                  inputRange: [-this.oneTurn, 0, this.oneTurn],
-                  outputRange: [
-                    `-${this.oneTurn}deg`,
-                    `0deg`,
-                    `${this.oneTurn}deg`,
-                  ],
-                }),
-              },
-            ],
-            backgroundColor: this.props.options.backgroundColor
-              ? this.props.options.backgroundColor
-              : '#fff',
-            width: width - 20,
-            height: width - 20,
-            borderRadius: (width - 20) / 2,
-            borderWidth: this.props.options.borderWidth
-              ? this.props.options.borderWidth
-              : 2,
-            borderColor: this.props.options.borderColor
-              ? this.props.options.borderColor
-              : '#fff',
-            opacity: this.state.wheelOpacity,
-          }}>
-          <AnimatedSvg
-            width={this.state.gameScreen}
-            height={this.state.gameScreen}
-            viewBox={`0 0 ${width} ${width}`}
-            style={{
-              transform: [{rotate: `-${this.angleOffset}deg`}],
-              margin: 10,
-            }}>
-            <G y={width / 2} x={width / 2}>
-              {this._wheelPaths.map((arc, i) => {
-                const [x, y] = arc.centroid;
-                const number = arc.value.toString();
-
-                return (
-                  <G key={`arc-${i}`}>
-                    <Path d={arc.path} strokeWidth={2} fill={arc.color} />
-                    <G
-                      rotation={
-                        (i * this.oneTurn) / this.numberOfSegments +
-                        this.angleOffset
-                      }
-                      origin={`${x}, ${y}`}>
-                      {this._textRender(x, y, number, i)}
-                    </G>
-                  </G>
-                );
-              })}
-            </G>
-          </AnimatedSvg>
+        <View style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
           {this.props.options.playButton ? this._renderTopToPlay() : null}
-        </Animated.View>
+          <Animated.View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: [
+                {
+                  rotate: this._angle.interpolate({
+                    inputRange: [-this.oneTurn, 0, this.oneTurn],
+                    outputRange: [
+                      `-${this.oneTurn}deg`,
+                      `0deg`,
+                      `${this.oneTurn}deg`,
+                    ],
+                  }),
+                },
+              ],
+              backgroundColor: this.props.options.backgroundColor
+                ? this.props.options.backgroundColor
+                : '#fff',
+              width: width - 20,
+              height: width - 20,
+              borderRadius: (width - 20) / 2,
+              borderWidth: this.props.options.borderWidth
+                ? this.props.options.borderWidth
+                : 2,
+              borderColor: this.props.options.borderColor
+                ? this.props.options.borderColor
+                : '#fff',
+              opacity: this.state.wheelOpacity,
+            }}>
+            <AnimatedSvg
+              width={this.state.gameScreen}
+              height={this.state.gameScreen}
+              viewBox={`0 0 ${width} ${width}`}
+              style={{
+                transform: [{ rotate: `-${this.angleOffset}deg` }],
+                margin: 10,
+              }}>
+              <G y={width / 2} x={width / 2}>
+                {this._wheelPaths.map((arc, i) => {
+                  const [x, y] = arc.centroid;
+                  const number = arc.value.toString();
+
+                  return (
+                    <G key={`arc-${i}`}>
+                      <Path d={arc.path} strokeWidth={2} fill={arc.color} />
+                      <G
+                        rotation={
+                          (i * this.oneTurn) / this.numberOfSegments +
+                          this.angleOffset
+                        }
+                        origin={`${x}, ${y}`}>
+                        {this._textRender(x, y, number, i)}
+                      </G>
+                    </G>
+                  );
+                })}
+              </G>
+            </AnimatedSvg>
+          </Animated.View>
+        </View>
       </View>
     );
   };
