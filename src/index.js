@@ -330,13 +330,11 @@ class WheelOfFortune extends Component {
   };
 
   _renderTopToPlay() {
-    if (this.state.started == false) {
-      return (
-        <TouchableOpacity onPress={() => this._onPress()}>
-          {this.props.options.playButton()}
-        </TouchableOpacity>
-      );
-    }
+    return (
+      <TouchableOpacity onPress={() => this._onPress()}>
+        {this.props.options.playButton()}
+      </TouchableOpacity>
+    );
   }
 
   render() {
