@@ -264,6 +264,7 @@ class WheelOfFortune extends Component {
               })}
             </G>
           </AnimatedSvg>
+          {this.props.options.playButton ? this._renderTopToPlay() : null}
         </Animated.View>
       </View>
     );
@@ -330,11 +331,11 @@ class WheelOfFortune extends Component {
   };
 
   _renderTopToPlay() {
-    return (
-      <TouchableOpacity onPress={() => this._onPress()}>
-        {this.props.options.playButton()}
-      </TouchableOpacity>
-    );
+      return (
+        <View style={{position:'absolute'}}>
+          {this.props.options.playButton()}
+        </View>
+      );
   }
 
   render() {
@@ -354,7 +355,6 @@ class WheelOfFortune extends Component {
             {this._renderSvgWheel()}
           </Animated.View>
         </TouchableOpacity>
-        {this.props.options.playButton ? this._renderTopToPlay() : null}
       </View>
     );
   }
