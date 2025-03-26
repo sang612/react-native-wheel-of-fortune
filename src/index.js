@@ -23,6 +23,7 @@ class WheelOfFortune extends Component {
       started: false,
       finished: false,
       winner: null,
+      isSpinning: false,
       gameScreen: new Animated.Value(width - 40),
       wheelOpacity: new Animated.Value(1),
       imageLeft: new Animated.Value(width / 2 - 30),
@@ -40,10 +41,11 @@ class WheelOfFortune extends Component {
     this.RewardCount = this.Rewards.length;
 
     this.numberOfSegments = this.RewardCount;
-    this.fontSize = 20;
+    this.fontSize = 18;
     this.oneTurn = 360;
     this.angleBySegment = this.oneTurn / this.numberOfSegments;
     this.angleOffset = this.angleBySegment / 2;
+
     this.winner = this.props.options.winner
       ? this.props.options.winner
       : Math.floor(Math.random() * this.numberOfSegments);
@@ -68,6 +70,10 @@ class WheelOfFortune extends Component {
   };
 
   _tryAgain = () => {
+    if (this.state.isSpinning) {
+      return;
+    }
+
     if (!this.myRef?.current) {
       this.myRef.current = true;
       this.prepareWheel();
@@ -104,10 +110,10 @@ class WheelOfFortune extends Component {
     var colors = this.props.options.colors
       ? this.props.options.colors
       : [
-          '#E07026',
-          '#E8C22E',
-          '#ABC937',
-          '#4F991D',
+          '#87B0F7',
+          '#F79A8A',
+          '#89CD3E',
+          '#F7DE91',
           '#22AFD3',
           '#5858D0',
           '#7B48C8',
@@ -144,10 +150,14 @@ class WheelOfFortune extends Component {
   };
 
   _onPress = () => {
+    if (this.state.isSpinning) {
+      return;
+    }
     const duration = this.props.options.duration || 10000;
 
     this.setState({
       started: true,
+      isSpinning: true,
     });
 
     Animated.timing(this._angle, {
@@ -163,43 +173,56 @@ class WheelOfFortune extends Component {
       this.setState({
         finished: true,
         winner: this._wheelPaths[winnerIndex].value,
+        isSpinning: false,
       });
       this.props.getWinner(this._wheelPaths[winnerIndex].value, winnerIndex);
     });
   };
 
-  _textRender = (x, y, number, i) => (
-    <Text
-      x={x - number.length * 5}
-      y={y - 80}
-      fill={
-        this.props.options.textColor ? this.props.options.textColor : '#fff'
+  splitTextIntoLines(text, maxCharsPerLine) {
+    const words = text.split(" "); // Tách theo khoảng trắng
+    const lines = [];
+    let currentLine = "";
+  
+    words.forEach((word) => {
+      if ((currentLine + " " + word).trim().length > maxCharsPerLine) {
+        lines.push(currentLine.trim()); // Đẩy dòng hiện tại vào mảng
+        currentLine = word; // Bắt đầu dòng mới
+      } else {
+        currentLine += " " + word;
       }
-      textAnchor="middle"
-      fontSize={this.fontSize}>
-      {Array.from({length: number.length}).map((_, j) => {
-        // Render reward text vertically
-        if (this.props.options.textAngle === 'vertical') {
-          return (
-            <TSpan x={x} dy={this.fontSize} key={`arc-${i}-slice-${j}`}>
-              {number.charAt(j)}
-            </TSpan>
-          );
-        }
-        // Render reward text horizontally
-        else {
-          return (
-            <TSpan
-              y={y - 40}
-              dx={this.fontSize * 0.07}
-              key={`arc-${i}-slice-${j}`}>
-              {number.charAt(j)}
-            </TSpan>
-          );
-        }
-      })}
-    </Text>
-  );
+    });
+  
+    if (currentLine) lines.push(currentLine.trim()); // Thêm dòng cuối cùng
+  
+    return lines;
+  }
+
+  _textRender = (x, y, text, i) => {
+    const maxCharsPerLine = 8; // Giới hạn số ký tự mỗi dòng
+    const lines = this.splitTextIntoLines(text, maxCharsPerLine);
+  
+    return (
+      <Text
+        x={x}
+        y={y - (lines.length - 1) * this.fontSize * 0.6} // Căn chỉnh text giữa
+        fill={this.props.options.textColor || '#fff'}
+        textAnchor="middle"
+        fontSize={this.fontSize}
+        fontWeight={'bold'}
+      >
+        {lines.map((line, index) => (
+          <TSpan
+            x={x} // Giữ nguyên vị trí x để căn giữa
+            dy={index === 0 ? 0 : this.fontSize * 1.2} // Xuống dòng
+            key={`line-${i}-${index}`}
+          >
+            {line}
+          </TSpan>
+        ))}
+      </Text>
+    );
+  };
 
   _renderSvgWheel = () => {
     return (
@@ -347,7 +370,7 @@ class WheelOfFortune extends Component {
     return (
       <View style={styles.container}>
         <TouchableOpacity
-          disabled={this.props.options.disabled}
+          disabled={this.props.options.disabled || this.state.isSpinning}
           onPress={()=>this._tryAgain()}
           style={{
             position: 'absolute',
