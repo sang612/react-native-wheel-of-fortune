@@ -54,6 +54,7 @@ class WheelOfFortune extends Component {
     this._angle = new Animated.Value(0);
 
     this.props.options.onRef(this);
+
   };
 
   resetWheelState = () => {
@@ -173,8 +174,11 @@ class WheelOfFortune extends Component {
       this.setState({
         finished: true,
         winner: this._wheelPaths[winnerIndex].value,
-        isSpinning: false,
       });
+
+      setTimeout(() => {
+        this.setState({ isSpinning: false });
+      }, 300);
       this.props.getWinner(this._wheelPaths[winnerIndex].value, winnerIndex);
     });
   };
