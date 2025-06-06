@@ -203,8 +203,25 @@ class WheelOfFortune extends Component {
   }
 
   _textRender = (x, y, text, i) => {
+    let displayText = text;
+  
+    // Các pattern để nhận diện text không trúng
+    const noWinPatterns = [
+      /chúc.*may.*mắn.*lần.*sau/i,
+      /không.*trúng/i,
+      /chúc.*may.*mắn.*\d+/i, // "Chúc bạn may mắn lần sau 1", "Chúc bạn may mắn lần sau 2"
+      /may.*mắn.*lần.*sau.*\d+/i
+    ];
+    
+    // Kiểm tra xem text có khớp với pattern nào không
+    const isNoWinText = noWinPatterns.some(pattern => pattern.test(text));
+    
+    if (isNoWinText) {
+      displayText = "Chúc bạn may mắn lần sau";
+    }
+
     const maxCharsPerLine = 8; // Giới hạn số ký tự mỗi dòng
-    const lines = this.splitTextIntoLines(text, maxCharsPerLine);
+    const lines = this.splitTextIntoLines(displayText, maxCharsPerLine);
   
     return (
       <Text
