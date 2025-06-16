@@ -10,6 +10,8 @@ import {
 import * as d3Shape from 'd3-shape';
 
 import Svg, {G, Text, TSpan, Path, Pattern} from 'react-native-svg';
+import NetInfo from "@react-native-community/netinfo";
+
 
 const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 
@@ -70,9 +72,32 @@ class WheelOfFortune extends Component {
     });
   };
 
-  _tryAgain = () => {
+  _tryAgain = async () => {
     if (this.state.isSpinning) {
       return;
+    }
+
+    const netState = await NetInfo.fetch();
+    if (!netState.isConnected || !netState.isInternetReachable) {
+      if (this.props.options && this.props.options.showToast) {
+        this.props.options.showToast("Không có kết nối mạng. Vui lòng kiểm tra lại.", "red");
+      } else {
+        alert("Không có kết nối mạng. Vui lòng kiểm tra lại.");
+      }
+      return;
+    }
+
+    // Gọi callback onSpinStart nếu có
+    if (typeof this.props.onSpinStart === 'function') {
+      try {
+        await this.props.onSpinStart();
+      } catch (e) {
+        // Nếu callback báo lỗi thì không quay và hiện thông báo
+        if (this.props.options && this.props.options.showToast) {
+          this.props.options.showToast("Không thể cập nhật số lượng quà nhà sách. Vui kiểm tra lại.", "red");
+        }
+        return;
+      }
     }
 
     if (!this.myRef?.current) {
